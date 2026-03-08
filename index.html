@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🦅 AVES DEL PERÚ — Quiz Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --jungle: #0b2e1a;
+  --jungle2: #143d22;
+  --green: #22c55e;
+  --green2: #16a34a;
+  --gold: #fbbf24;
+  --gold2: #f59e0b;
+  --red: #ef4444;
+  --red2: #dc2626;
+  --blue: #38bdf8;
+  --purple: #a78bfa;
+  --cream: #fef9f0;
+  --white: #ffffff;
+  --gray: #6b7280;
+  --dark: #111827;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--jungle);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── FONDO ANIMADO ─────────────────────────────────────── */
+.bg-leaves {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.leaf {
+  position: absolute;
+  font-size: 1.6rem;
+  opacity: 0.06;
+  animation: leafFloat linear infinite;
+}
+@keyframes leafFloat {
+  0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.07; }
+  90%  { opacity: 0.07; }
+  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* ── PARTÍCULAS DE ESTRELLAS ───────────────────────────── */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* ── CONTENEDOR PRINCIPAL ──────────────────────────────── */
+.game-wrap {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 680px;
+  padding: 16px;
+}
+
+/* ── SCREENS ───────────────────────────────────────────── */
+.screen { display: none; animation: fadeIn 0.4s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── PANTALLA INICIO ───────────────────────────────────── */
+.start-screen {
+  text-align: center;
+}
+
+.logo-bird {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 30px rgba(34,197,94,0.6));
+  animation: birdBob 3s ease-in-out infinite;
+}
+@keyframes birdBob {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
+}
+
+.game-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem, 10vw, 5rem);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--gold), var(--green), var(--gold2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  margin-bottom: 4px;
+}
+
+.game-subtitle {
+  font-size: 0.9rem;
+  color: rgba(254,249,240,0.5);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.mode-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+@media(max-width: 480px) { .mode-cards { grid-template-columns: 1fr; } }
+
+.mode-card {
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  overflow: hidden;
+}
+.mode-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--card-color, var(--green));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.mode-card:hover::before, .mode-card.selected::before { opacity: 0.12; }
+.mode-card.selected { border-color: var(--card-color, var(--green)); transform: scale(1.04); }
+.mode-card:hover { transform: scale(1.04); border-color: rgba(255,255,255,0.25); }
+
+.mode-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+.mode-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
+.mode-desc { font-size: 0.72rem; color: rgba(254,249,240,0.5); }
+
+.difficulty-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.diff-btn {
+  padding: 8px 22px;
+  border-radius: 100px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(254,249,240,0.6);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.diff-btn.active, .diff-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(251,191,36,0.08); }
+
+.start-btn {
+  display: inline-block;
+  padding: 16px 48px;
+  background: linear-gradient(135deg, var(--green2), var(--green));
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  box-shadow: 0 0 40px rgba(34,197,94,0.4);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.start-btn:hover { transform: scale(1.07); box-shadow: 0 0 60px rgba(34,197,94,0.6); }
+
+.high-score-row {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: rgba(254,249,240,0.4);
+}
+.high-score-row span { color: var(--gold); font-weight: 800; }
+
+/* ── HUD ───────────────────────────────────────────────── */
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.hud-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(251,191,36,0.5);
+}
+.hud-score-label { font-size: 0.6rem; color: rgba(254,249,240,0.4); letter-spacing: 0.2em; text-transform: uppercase; }
+
+.hud-lives {
+  display: flex;
+  gap: 4px;
+  font-size: 1.3rem;
+}
+
+.hud-streak {
+  text-align: right;
+  font-size: 0.75rem;
+  color: rgba(254,249,240,0.5);
+}
+.hud-streak b { color: var(--gold); font-size: 1rem; }
+
+/* BARRA DE PROGRESO */
+.progress-bar-wrap {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green2), var(--green));
+  border-radius: 100px;
+  transition: width 0.5s ease;
+}
+
+/* TIMER */
+.timer-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.timer-track {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 3px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.timer-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
+  transition: color 0.3s;
+}
+.timer-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--green) var(--pct, 100%), transparent 0%);
+  transition: background 0.5s;
+}
+
+/* ── TARJETA DE PREGUNTA ───────────────────────────────── */
+.question-card {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.question-img-wrap {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  display: none;
+}
+.question-img-wrap.has-img { display: block; }
+.question-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: brightness(0.85) saturate(1.2);
+}
+.question-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(11,46,26,0.85) 0%, transparent 60%);
+}
+.question-img-tag {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(254,249,240,0.6);
+  font-weight: 700;
+}
+
+.question-body { padding: 22px 20px 18px; }
+
+.question-category {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green);
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.question-num {
+  font-size: 0.65rem;
+  color: rgba(254,249,240,0.3);
+  margin-left: auto;
+}
+
+.question-text {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  font-weight: 800;
+  line-height: 1.45;
+  color: var(--cream);
+}
+
+/* ── RESPUESTAS ────────────────────────────────────────── */
+.answers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+@media(max-width: 400px) { .answers-grid { grid-template-columns: 1fr; } }
+
+.answer-btn {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.35;
+  position: relative;
+  overflow: hidden;
+}
+.answer-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.answer-btn:not(.disabled):hover {
+  border-color: var(--green);
+  background: rgba(34,197,94,0.1);
+  transform: scale(1.02);
+}
+.answer-btn .ans-letter {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.answer-btn.correct {
+  border-color: var(--green) !important;
+  background: rgba(34,197,94,0.18) !important;
+  animation: correctPulse 0.4s ease;
+}
+.answer-btn.correct .ans-letter { background: var(--green); color: white; }
+.answer-btn.wrong {
+  border-color: var(--red) !important;
+  background: rgba(239,68,68,0.15) !important;
+  animation: wrongShake 0.4s ease;
+}
+.answer-btn.wrong .ans-letter { background: var(--red); color: white; }
+.answer-btn.disabled { cursor: not-allowed; opacity: 0.5; }
+.answer-btn.reveal-correct {
+  border-color: rgba(34,197,94,0.5) !important;
+  background: rgba(34,197,94,0.08) !important;
+}
+
+@keyframes correctPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@keyframes wrongShake {
+  0%,100% { transform: translateX(0); }
+  25%     { transform: translateX(-6px); }
+  75%     { transform: translateX(6px); }
+}
+
+/* ── FEEDBACK BANNER ───────────────────────────────────── */
+.feedback-banner {
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: none;
+  animation: slideUp 0.3s ease;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.feedback-banner.show { display: block; }
+.feedback-banner.correct-fb {
+  background: rgba(34,197,94,0.15);
+  border: 1.5px solid rgba(34,197,94,0.4);
+}
+.feedback-banner.wrong-fb {
+  background: rgba(239,68,68,0.12);
+  border: 1.5px solid rgba(239,68,68,0.3);
+}
+.feedback-banner.timeout-fb {
+  background: rgba(251,191,36,0.12);
+  border: 1.5px solid rgba(251,191,36,0.3);
+}
+.feedback-title {
+  font-weight: 900;
+  font-size: 1rem;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.feedback-text { color: rgba(254,249,240,0.75); font-size: 0.85rem; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* BOTÓN SIGUIENTE */
+.next-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--green2), var(--green));
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  border: none;
+  cursor: pointer;
+  display: none;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+  transition: all 0.2s;
+}
+.next-btn.show { display: block; animation: fadeIn 0.3s ease; }
+.next-btn:hover { transform: scale(1.02); box-shadow: 0 6px 30px rgba(34,197,94,0.5); }
+
+/* POWER-UPS */
+.powerups {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.pu-btn {
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  color: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pu-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+.pu-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pu-count {
+  background: rgba(251,191,36,0.2);
+  color: var(--gold);
+  border-radius: 100px;
+  padding: 1px 7px;
+  font-size: 0.7rem;
+}
+
+/* ── PANTALLA DE RESULTADO ────────────────────────────── */
+.result-screen { text-align: center; }
+
+.result-bird {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 8px;
+  animation: birdBob 2s ease-in-out infinite;
+}
+
+.result-grade {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 12vw, 6rem);
+  letter-spacing: 0.03em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.result-msg { font-size: 1rem; color: rgba(254,249,240,0.65); margin-bottom: 24px; }
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 20px;
+}
+.res-stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.res-stat-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(254,249,240,0.45); margin-top: 2px; }
+
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.badge {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge-gold { background: rgba(251,191,36,0.2); border: 1.5px solid var(--gold); color: var(--gold); }
+.badge-green { background: rgba(34,197,94,0.15); border: 1.5px solid var(--green); color: var(--green); }
+.badge-purple { background: rgba(167,139,250,0.15); border: 1.5px solid var(--purple); color: var(--purple); }
+.badge-blue { background: rgba(56,189,248,0.15); border: 1.5px solid var(--blue); color: var(--blue); }
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn-play-again {
+  padding: 15px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--green2), var(--green));
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(34,197,94,0.35);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.btn-play-again:hover { transform: scale(1.04); }
+.btn-menu {
+  padding: 12px;
+  border-radius: 14px;
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: rgba(254,249,240,0.65);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-menu:hover { border-color: rgba(255,255,255,0.35); color: var(--cream); }
+
+/* BONUS POINTS POPUP */
+.bonus-pop {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(251,191,36,0.8);
+  pointer-events: none;
+  z-index: 999;
+  letter-spacing: 0.05em;
+  transition: transform 0.15s, opacity 0.4s;
+}
+.bonus-pop.show {
+  animation: bonusPop 0.8s ease forwards;
+}
+@keyframes bonusPop {
+  0%  { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+  30% { transform: translate(-50%,-80%) scale(1.3); opacity: 1; }
+  100%{ transform: translate(-50%,-120%) scale(1); opacity: 0; }
+}
+
+/* SCROLL dentro del game-wrap para pantallas pequeñas */
+@media(max-height: 700px) {
+  body { align-items: flex-start; overflow-y: auto; }
+  .game-wrap { padding-top: 20px; padding-bottom: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Fondo: hojas flotando -->
+<div class="bg-leaves" id="bgLeaves"></div>
+<div class="stars" id="stars"></div>
+<div class="bonus-pop" id="bonusPop"></div>
+
+<div class="game-wrap">
+
+  <!-- ════════════════ PANTALLA INICIO ═══════════════════ -->
+  <div class="screen active" id="screenStart">
+    <div class="start-screen">
+      <span class="logo-bird">🦅</span>
+      <div class="game-title">AVES DEL PERÚ</div>
+      <div class="game-subtitle">Quiz de la Selva Amazónica</div>
+
+      <div class="mode-cards">
+        <div class="mode-card selected" style="--card-color:var(--green)" data-mode="clasico">
+          <span class="mode-icon">🎯</span>
+          <div class="mode-name">Clásico</div>
+          <div class="mode-desc">10 preguntas · 3 vidas</div>
+        </div>
+        <div class="mode-card" style="--card-color:var(--gold)" data-mode="contrarreloj">
+          <span class="mode-icon">⚡</span>
+          <div class="mode-name">Contrarreloj</div>
+          <div class="mode-desc">15 seg por pregunta</div>
+        </div>
+        <div class="mode-card" style="--card-color:var(--purple)" data-mode="supervivencia">
+          <span class="mode-icon">💀</span>
+          <div class="mode-name">Supervivencia</div>
+          <div class="mode-desc">1 error = game over</div>
+        </div>
+      </div>
+
+      <div class="difficulty-row">
+        <button class="diff-btn active" data-diff="facil">🌿 Fácil</button>
+        <button class="diff-btn" data-diff="medio">🔥 Medio</button>
+        <button class="diff-btn" data-diff="dificil">💀 Difícil</button>
+      </div>
+
+      <button class="start-btn" id="btnStart">¡EMPEZAR!</button>
+
+      <div class="high-score-row">
+        🏆 Mejor puntuación: <span id="highScoreDisplay">0</span> pts
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ PANTALLA JUEGO ════════════════════ -->
+  <div class="screen" id="screenGame">
+
+    <!-- HUD -->
+    <div class="hud">
+      <div>
+        <div class="hud-score-label">Puntos</div>
+        <div class="hud-score" id="hudScore">0</div>
+      </div>
+      <div class="hud-lives" id="hudLives"></div>
+      <div class="hud-streak">
+        Racha<br><b id="hudStreak">x0</b>
+      </div>
+    </div>
+
+    <!-- Barra progreso -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-wrap" id="timerWrap" style="display:none">
+      <div class="timer-track">
+        <div class="timer-bg" id="timerBg"></div>
+        <div class="timer-num" id="timerNum">15</div>
+      </div>
+    </div>
+
+    <!-- Power-ups -->
+    <div class="powerups">
+      <button class="pu-btn" id="puSkip" title="Saltar pregunta">
+        ⏭ Saltar <span class="pu-count" id="puSkipCount">2</span>
+      </button>
+      <button class="pu-btn" id="pu5050" title="Eliminar 2 opciones incorrectas">
+        ✂️ 50/50 <span class="pu-count" id="pu5050Count">1</span>
+      </button>
+      <button class="pu-btn" id="puTime" title="Más tiempo" style="display:none">
+        ⏱ +10s <span class="pu-count" id="puTimeCount">2</span>
+      </button>
+    </div>
+
+    <!-- Pregunta -->
+    <div class="question-card">
+      <div class="question-img-wrap" id="questionImgWrap">
+        <img class="question-img" id="questionImg" src="" alt=""/>
+        <div class="question-img-overlay"></div>
+        <div class="question-img-tag" id="questionImgTag"></div>
+      </div>
+      <div class="question-body">
+        <div class="question-category">
+          <span id="questionCategory">🦅 Rapaces</span>
+          <span class="question-num" id="questionNum">1 / 10</span>
+        </div>
+        <div class="question-text" id="questionText"></div>
+      </div>
+    </div>
+
+    <!-- Respuestas -->
+    <div class="answers-grid" id="answersGrid"></div>
+
+    <!-- Feedback -->
+    <div class="feedback-banner" id="feedbackBanner">
+      <div class="feedback-title" id="feedbackTitle"></div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+
+    <!-- Siguiente -->
+    <button class="next-btn" id="btnNext">SIGUIENTE PREGUNTA →</button>
+  </div>
+
+  <!-- ════════════════ PANTALLA RESULTADO ════════════════ -->
+  <div class="screen" id="screenResult">
+    <div class="result-screen">
+      <span class="result-bird" id="resultBird">🦅</span>
+      <div class="result-grade" id="resultGrade"></div>
+      <div class="result-msg" id="resultMsg"></div>
+
+      <div class="result-stats">
+        <div>
+          <div class="res-stat-num" id="resPuntos" style="color:var(--gold)">0</div>
+          <div class="res-stat-label">Puntos</div>
+        </div>
+        <div>
+          <div class="res-stat-num" id="resCorrectas" style="color:var(--green)">0</div>
+          <div class="res-stat-label">Correctas</div>
+        </div>
+        <div>
+          <div class="res-stat-num" id="resPrecision" style="color:var(--blue)">0%</div>
+          <div class="res-stat-label">Precisión</div>
+        </div>
+      </div>
+
+      <div class="result-badges" id="resultBadges"></div>
+
+      <div class="result-actions">
+        <button class="btn-play-again" id="btnPlayAgain">🔄 JUGAR DE NUEVO</button>
+        <button class="btn-menu" id="btnMenu">← Menú Principal</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ╔══════════════════════════════════════════════════════════╗
+   ║            BANCO DE PREGUNTAS — AVES DEL PERÚ            ║
+   ╚══════════════════════════════════════════════════════════╝
+   Categorías de dificultad: "facil" | "medio" | "dificil"
+   Cada pregunta tiene: texto, opciones[4], correcta(índice),
+   explicacion, categoria, imagen(opcional), ave(nombre del ave)
+*/
+const ALL_QUESTIONS = [
+
+  /* ── FÁCIL ─────────────────────────────────────────────── */
+  {
+    dificultad: "facil",
+    categoria: "🇵🇪 Ave Nacional",
+    ave: "Gallito de las Rocas",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Rupicola_peruvianus_-_Jardim_Zoologico_%28cropped%29.jpg/640px-Rupicola_peruvianus_-_Jardim_Zoologico_%28cropped%29.jpg",
+    texto: "¿Cuál es el Ave Nacional del Perú?",
+    opciones: ["Cóndor Andino", "Gallito de las Rocas", "Guacamayo Escarlata", "Águila Arpía"],
+    correcta: 1,
+    explicacion: "El Gallito de las Rocas (Rupicola peruvianus) es el Ave Nacional del Perú desde 1941. El macho luce un plumaje naranja-rojo neón inconfundible."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🦅 Rapaces",
+    ave: "Águila Arpía",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Harpia_harpyja_001.jpg/640px-Harpia_harpyja_001.jpg",
+    texto: "¿Cuál es la rapaz más grande del mundo, presente en la Amazonía peruana?",
+    opciones: ["Cóndor Andino", "Halcón Peregrino", "Águila Arpía", "Cóndor de la Selva"],
+    correcta: 2,
+    explicacion: "El Águila Arpía (Harpia harpyja) es la rapaz más grande y poderosa del mundo. Sus garras pueden medir hasta 13 cm, comparables a las de un oso grizzly."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🦜 Psitácidos",
+    ave: "Guacamayo Escarlata",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ara_macao_-_Chojna.jpg/640px-Ara_macao_-_Chojna.jpg",
+    texto: "¿De qué color predominante es el Guacamayo Escarlata (Ara macao)?",
+    opciones: ["Azul y amarillo", "Verde y rojo", "Rojo con franjas amarillas y azules", "Completamente rojo"],
+    correcta: 2,
+    explicacion: "El Guacamayo Escarlata tiene rojo intenso predominante en el cuerpo, con franjas amarillas brillantes en las alas que gradúan a azul eléctrico en las puntas."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🌿 Hábitat",
+    texto: "¿Dónde habita principalmente el Hoatzín (Opisthocomus hoazin)?",
+    opciones: ["Desiertos costeros", "Cumbres andinas", "Pantanos y cochas de la selva baja", "Bosques secos"],
+    correcta: 2,
+    explicacion: "El Hoatzín vive en pantanos, orillas de ríos y cochas (lagos oxbow) de la selva amazónica baja, donde abundan las plantas con hojas que forman su dieta."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🛡️ Conservación",
+    texto: "¿Qué significan las siglas IUCN?",
+    opciones: [
+      "Instituto Único de Conservación Nacional",
+      "Unión Internacional para la Conservación de la Naturaleza",
+      "Inventario Universal de Criaturas Naturales",
+      "Iniciativa para la Unión de Ciencias Naturales"
+    ],
+    correcta: 1,
+    explicacion: "La IUCN (International Union for Conservation of Nature) es la autoridad global que determina el estado de conservación de las especies mediante la Lista Roja."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🌿 Hábitat",
+    ave: "Gallito de las Rocas",
+    texto: "¿En qué tipo de ecosistema habita principalmente el Gallito de las Rocas?",
+    opciones: ["Selva baja amazónica", "Selva alta (Yungas)", "Costa desértica", "Puna altoandina"],
+    correcta: 1,
+    explicacion: "El Gallito de las Rocas habita las Yungas (selva alta andina) entre los 500 y 2,400 msnm en departamentos como San Martín, Pasco y Cusco."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🦜 Psitácidos",
+    texto: "¿Cuál es el estado de conservación del Guacamayo Escarlata a nivel global según la IUCN?",
+    opciones: ["En Peligro Crítico (CR)", "En Peligro (EN)", "Vulnerable (VU)", "Preocupación Menor (LC)"],
+    correcta: 3,
+    explicacion: "Aunque es LC a nivel global, el Guacamayo Escarlata sufre presión por el tráfico ilegal de mascotas y está en el Apéndice I de CITES, que prohíbe su comercio internacional."
+  },
+  {
+    dificultad: "facil",
+    categoria: "🍃 Curiosidades",
+    ave: "Hoatzín",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Hoatzin_2.jpg/640px-Hoatzin_2.jpg",
+    texto: "El Hoatzín es el único ave del mundo que digiere alimento igual que…",
+    opciones: ["Los reptiles", "Las vacas (rumiantes)", "Los peces", "Los murciélagos"],
+    correcta: 1,
+    explicacion: "El Hoatzín tiene un buche especializado donde bacterias fermentan las hojas que come, igual que el rumen de las vacas. Por eso tiene un olor peculiar a estiércol."
+  },
+
+  /* ── MEDIO ──────────────────────────────────────────────── */
+  {
+    dificultad: "medio",
+    categoria: "🔬 Taxonomía",
+    texto: "¿A qué familia pertenece el Gallito de las Rocas (Rupicola peruvianus)?",
+    opciones: ["Psittacidae", "Cotingidae", "Trochilidae", "Accipitridae"],
+    correcta: 1,
+    explicacion: "El Gallito de las Rocas pertenece a la familia Cotingidae (cotingas), un grupo de aves mayormente neotropicales conocidas por sus brillantes colores."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🌟 Endemismo",
+    ave: "Colibrí Maravilloso",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Marvelous_Spatuletail_%28Loddigesia_mirabilis%29_male_-_8.jpg/640px-Marvelous_Spatuletail_%28Loddigesia_mirabilis%29_male_-_8.jpg",
+    texto: "¿En qué valle específico se restringe la distribución del Colibrí Maravilloso (Loddigesia mirabilis)?",
+    opciones: ["Valle del Colca", "Valle del Mantaro", "Valle del río Utcubamba", "Valle del Urubamba"],
+    correcta: 2,
+    explicacion: "El Colibrí Maravilloso solo existe en el valle del río Utcubamba (Amazonas), un rango de menos de 100 km². La Reserva de Huembo es clave para su protección."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🦅 Comportamiento",
+    ave: "Águila Arpía",
+    texto: "¿Cuál es la presa favorita del Águila Arpía en la Amazonía?",
+    opciones: ["Peces grandes", "Monos y perezosos", "Serpientes boa", "Tortugas"],
+    correcta: 1,
+    explicacion: "El Águila Arpía es especialista en cazar monos (Ateles, Alouatta) y perezosos en el dosel forestal. Sus potentes garras pueden sujetar presas del tamaño de un mono adulto."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🛡️ Conservación",
+    ave: "Paraba de Frente Roja",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Ara_rubrogenys_-Bolivia-8.jpg/640px-Ara_rubrogenys_-Bolivia-8.jpg",
+    texto: "¿Cuál es el estado de conservación de la Paraba de Frente Roja (Ara rubrogenys)?",
+    opciones: ["LC – Preocupación Menor", "NT – Casi Amenazada", "EN – En Peligro", "CR – Peligro Crítico"],
+    correcta: 3,
+    explicacion: "La Paraba de Frente Roja está en Peligro Crítico (CR) principalmente por el tráfico ilegal de mascotas y la pérdida de sitios de anidación en acantilados rocosos."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🌿 Ecología",
+    texto: "¿Por qué visitan los Guacamayos las 'colpas de arcilla' en el PN Bahuaja Sonene?",
+    opciones: [
+      "Para hacer sus nidos",
+      "Para beber agua mineral",
+      "Para consumir minerales que neutralizan toxinas de su dieta",
+      "Para escapar de depredadores"
+    ],
+    correcta: 2,
+    explicacion: "Los guacamayos ingieren arcilla de las colpas para neutralizar las toxinas presentes en las semillas verdes y frutas que consumen. Es una adaptación conductual fascinante."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🔬 Morfología",
+    ave: "Hoatzín",
+    texto: "¿Qué característica única tienen los polluelos del Hoatzín que los diferencia de casi todas las aves?",
+    opciones: [
+      "Nacen sin plumas",
+      "Tienen dientes",
+      "Poseen garras funcionales en las alas para trepar",
+      "No pueden volar nunca"
+    ],
+    correcta: 2,
+    explicacion: "Los polluelos del Hoatzín tienen garras funcionales en las alas (reminiscencia de sus ancestros reptilianos). Las usan para trepar y escapar del nido si son amenazados."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🏛️ Legislación",
+    texto: "¿Qué es el CITES Apéndice I?",
+    opciones: [
+      "Lista de aves más abundantes del mundo",
+      "Prohibición total de comercio internacional de la especie",
+      "Permiso especial de cría en cautiverio",
+      "Categoría de aves no amenazadas"
+    ],
+    correcta: 1,
+    explicacion: "El CITES Apéndice I incluye especies amenazadas de extinción. El comercio internacional de estas especies solo se permite en circunstancias excepcionales. El Guacamayo Escarlata está en Apéndice I."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🌟 Endemismo",
+    texto: "¿Cuáles de estas aves son endémicas del Perú?",
+    opciones: [
+      "Águila Arpía y Hoatzín",
+      "Colibrí Maravilloso, Lechucita Bigotona y Tucancillo de Ceja Amarilla",
+      "Guacamayo Escarlata y Cóndor de la Selva",
+      "Gallito de las Rocas y Paraba de Frente Roja"
+    ],
+    correcta: 1,
+    explicacion: "El Colibrí Maravilloso, la Lechucita Bigotona y el Tucancillo de Ceja Amarilla son endémicos del Perú: no existen en ningún otro país del mundo."
+  },
+  {
+    dificultad: "medio",
+    categoria: "🎭 Comportamiento",
+    ave: "Gallito de las Rocas",
+    texto: "¿Cómo se llama el comportamiento de cortejo grupal del Gallito de las Rocas?",
+    opciones: ["Parada nupcial", "Lek", "Danza del cortejo", "Exhibición territorial"],
+    correcta: 1,
+    explicacion: "Los 'leks' son arenas colectivas donde los machos del Gallito de las Rocas se reúnen al amanecer para exhibir su plumaje naranja-rojo y competir por la atención de las hembras."
+  },
+
+  /* ── DIFÍCIL ────────────────────────────────────────────── */
+  {
+    dificultad: "dificil",
+    categoria: "🔬 Taxonomía",
+    ave: "Hoatzín",
+    texto: "¿A qué orden taxonómico pertenece el Hoatzín (Opisthocomus hoazin)?",
+    opciones: ["Galliformes", "Opisthocomiformes", "Cuculiformes", "Columbiformes"],
+    correcta: 1,
+    explicacion: "El Hoatzín es el único representante del orden Opisthocomiformes. Su posición filogenética fue debatida por décadas; estudios genómicos modernos lo ubican como un linaje único sin parientes cercanos vivos."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "📐 Morfología",
+    ave: "Águila Arpía",
+    texto: "¿Cuánto pueden medir las garras del Águila Arpía (Harpia harpyja)?",
+    opciones: ["Hasta 5 cm", "Hasta 8 cm", "Hasta 13 cm", "Hasta 20 cm"],
+    correcta: 2,
+    explicacion: "Las garras traseras del Águila Arpía pueden medir hasta 13 cm, similar a las garras de un oso grizzly. Esta adaptación le permite capturar monos y perezosos con precisión letal."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "🌍 Distribución",
+    ave: "Lechucita Bigotona",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Long-whiskered_owlet_-_Xenoglaux_loweryi.jpg/640px-Long-whiskered_owlet_-_Xenoglaux_loweryi.jpg",
+    texto: "¿En qué año fue descrita científicamente la Lechucita Bigotona (Xenoglaux loweryi)?",
+    opciones: ["1945", "1960", "1976", "1990"],
+    correcta: 2,
+    explicacion: "La Lechucita Bigotona fue descrita por la ciencia en 1976 a partir de especímenes capturados accidentalmente en redes de niebla. Sigue siendo una de las aves menos conocidas del planeta."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "🛡️ Conservación",
+    ave: "Paujil Carunculado",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Crax_globulosa_male.jpg/640px-Crax_globulosa_male.jpg",
+    texto: "¿Por qué el Paujil Carunculado (Crax globulosa) es especialmente vulnerable a la caza?",
+    opciones: [
+      "Es muy lento para volar",
+      "Tiene un plumaje llamativo que lo delata",
+      "Es muy grande, sabroso y habita en zonas accesibles por ríos",
+      "Anida en el suelo, fácil de encontrar"
+    ],
+    correcta: 2,
+    explicacion: "El Paujil Carunculado es una de las aves más grandes de la Amazonía, con carne muy apreciada, y habita en riberas y várzeas accesibles por los grandes ríos amazónicos, lo que facilita su caza."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "🌟 Endemismo",
+    texto: "¿Cuál es el nombre de la institución peruana especializada en ornitología que monitorea especies endémicas?",
+    opciones: ["SERNANP", "SERFOR", "CORBIDI", "MINAM"],
+    correcta: 2,
+    explicacion: "CORBIDI (Centro de Ornitología y Biodiversidad) es la principal institución peruana dedicada al estudio y conservación de aves. Publica registros y realiza encuestas de campo de especies poco conocidas."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "🔬 Morfología",
+    ave: "Colibrí Maravilloso",
+    texto: "¿Qué rasgo morfológico hace único al macho del Colibrí Maravilloso (Loddigesia mirabilis)?",
+    opciones: [
+      "Pico curvado de 15 cm",
+      "Plumaje completamente iridiscente en 7 colores",
+      "Solo 4 plumas en la cola: las 2 exteriores terminan en 'raquetas' violáceas",
+      "Alas transparentes como el cristal"
+    ],
+    correcta: 2,
+    explicacion: "El macho del Colibrí Maravilloso tiene solo 4 plumas en la cola; las dos exteriores son extremadamente largas y terminan en discos o 'raquetas' de color azul violáceo iridiscente que se mueven independientemente."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "🌍 Ecología",
+    texto: "¿Cuál de estas aves cumple un rol de 'limpieza biológica' en el ecosistema, evitando la propagación de enfermedades?",
+    opciones: ["Águila Arpía", "Gallito de las Rocas", "Cóndor de la Selva", "Colibrí Maravilloso"],
+    correcta: 2,
+    explicacion: "El Cóndor de la Selva (Sarcoramphus papa) es carroñero especializado. Al consumir cadáveres rápidamente, evita la descomposición prolongada que propagaría bacterias y enfermedades al ecosistema."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "📋 Conservación",
+    texto: "¿En cuál de estas áreas protegidas del Perú se protege específicamente al Colibrí Maravilloso?",
+    opciones: [
+      "Reserva Nacional Pacaya Samiria",
+      "Parque Nacional Manu",
+      "Reserva privada Huembo (Amazonas)",
+      "Parque Nacional Yanachaga-Chemillén"
+    ],
+    correcta: 2,
+    explicacion: "La Reserva privada Huembo, gestionada por la Asociación Ecosistemas Andinos (ECOAN) en Amazonas, es el principal refugio del Colibrí Maravilloso y un destino de ecoturismo ornitológico de fama mundial."
+  },
+  {
+    dificultad: "dificil",
+    categoria: "🔬 Taxonomía",
+    ave: "Tucancillo de Ceja Amarilla",
+    imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Yellow-browed_toucanet_%28Aulacorhynchus_huallagae%29.jpg/640px-Yellow-browed_toucanet_%28Aulacorhynchus_huallagae%29.jpg",
+    texto: "¿A qué familia pertenece el Tucancillo de Ceja Amarilla (Aulacorhynchus huallagae)?",
+    opciones: ["Trochilidae", "Cotingidae", "Ramphastidae", "Psittacidae"],
+    correcta: 2,
+    explicacion: "El Tucancillo de Ceja Amarilla pertenece a la familia Ramphastidae (tucanes), caracterizada por sus picos grandes y coloridos. Es una de las aves más raras y menos conocidas del Perú."
+  }
+];
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║                  LÓGICA DEL JUEGO                        ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+// ── ESTADO ──────────────────────────────────────────────────
+const STATE = {
+  mode: 'clasico',
+  diff: 'facil',
+  questions: [],
+  currentIndex: 0,
+  score: 0,
+  lives: 3,
+  streak: 0,
+  maxStreak: 0,
+  correctCount: 0,
+  answered: false,
+  timerInterval: null,
+  timeLeft: 15,
+  puSkip: 2,
+  pu5050: 1,
+  puTime: 2,
+  highScore: parseInt(localStorage.getItem('avesHighScore') || '0'),
+  eliminated: []  // índices eliminados por 50/50
+};
+
+const LETTERS = ['A','B','C','D'];
+const MODE_LIVES = { clasico: 3, contrarreloj: 3, supervivencia: 1 };
+const MODE_QUESTIONS = { clasico: 10, contrarreloj: 10, supervivencia: 999 };
+const DIFF_TIME = { facil: 20, medio: 15, dificil: 10 };
+const SCORE_BASE = { facil: 100, medio: 150, dificil: 250 };
+
+// ── SETUP VISUAL DE FONDO ────────────────────────────────────
+function buildBackground() {
+  const leaves = document.getElementById('bgLeaves');
+  const emojis = ['🌿','🍃','🌺','🦋','🌸','✨','🍀'];
+  for (let i = 0; i < 20; i++) {
+    const l = document.createElement('div');
+    l.className = 'leaf';
+    l.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    l.style.left = Math.random() * 100 + '%';
+    l.style.animationDuration = (12 + Math.random() * 18) + 's';
+    l.style.animationDelay = (Math.random() * 20) + 's';
+    l.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+    leaves.appendChild(l);
+  }
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = 1 + Math.random() * 2.5;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    starsEl.appendChild(s);
+  }
+}
+
+// ── PANTALLAS ────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── INICIO ───────────────────────────────────────────────────
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    STATE.mode = card.dataset.mode;
+  });
+});
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.diff = btn.dataset.diff;
+  });
+});
+
+document.getElementById('highScoreDisplay').textContent = STATE.highScore;
+
+document.getElementById('btnStart').addEventListener('click', startGame);
+
+function startGame() {
+  // Filtrar preguntas por dificultad y mezclar
+  let pool = ALL_QUESTIONS.filter(q =>
+    STATE.diff === 'facil' ? q.dificultad === 'facil' :
+    STATE.diff === 'medio' ? ['facil','medio'].includes(q.dificultad) :
+    true
+  );
+  // Mezclar
+  pool = pool.sort(() => Math.random() - 0.5);
+
+  const maxQ = STATE.mode === 'supervivencia' ? pool.length : Math.min(MODE_QUESTIONS[STATE.mode], pool.length);
+  STATE.questions = pool.slice(0, maxQ);
+  STATE.currentIndex = 0;
+  STATE.score = 0;
+  STATE.lives = MODE_LIVES[STATE.mode];
+  STATE.streak = 0;
+  STATE.maxStreak = 0;
+  STATE.correctCount = 0;
+  STATE.puSkip = 2;
+  STATE.pu5050 = 1;
+  STATE.puTime = 2;
+
+  // Timer solo en modo contrarreloj y difícil
+  const showTimer = STATE.mode === 'contrarreloj' || STATE.diff === 'dificil';
+  document.getElementById('timerWrap').style.display = showTimer ? 'flex' : 'none';
+  document.getElementById('puTime').style.display = showTimer ? 'flex' : 'none';
+
+  showScreen('screenGame');
+  loadQuestion();
+}
+
+// ── CARGAR PREGUNTA ──────────────────────────────────────────
+function loadQuestion() {
+  if (STATE.currentIndex >= STATE.questions.length) { endGame(); return; }
+
+  const q = STATE.questions[STATE.currentIndex];
+  STATE.answered = false;
+  STATE.eliminated = [];
+
+  // Actualizar HUD
+  updateHUD();
+  document.getElementById('feedbackBanner').className = 'feedback-banner';
+  document.getElementById('btnNext').className = 'next-btn';
+
+  // Progreso
+  const pct = (STATE.currentIndex / STATE.questions.length) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Número de pregunta
+  const total = STATE.mode === 'supervivencia' ? '∞' : STATE.questions.length;
+  document.getElementById('questionNum').textContent = `${STATE.currentIndex + 1} / ${total}`;
+  document.getElementById('questionCategory').textContent = q.categoria;
+
+  // Imagen
+  const imgWrap = document.getElementById('questionImgWrap');
+  if (q.imagen) {
+    imgWrap.classList.add('has-img');
+    const img = document.getElementById('questionImg');
+    img.src = q.imagen;
+    img.onerror = () => imgWrap.classList.remove('has-img');
+    document.getElementById('questionImgTag').textContent = q.ave || '';
+  } else {
+    imgWrap.classList.remove('has-img');
+  }
+
+  // Texto
+  document.getElementById('questionText').textContent = q.texto;
+
+  // Respuestas (mezclar con shuffle pero recordar cuál es correcta)
+  const shuffled = q.opciones.map((opt, i) => ({ opt, orig: i }))
+    .sort(() => Math.random() - 0.5);
+
+  const grid = document.getElementById('answersGrid');
+  grid.innerHTML = shuffled.map((item, idx) => `
+    <button class="answer-btn" data-orig="${item.orig}" onclick="selectAnswer(this, ${item.orig}, ${q.correcta})">
+      <span class="ans-letter">${LETTERS[idx]}</span>
+      <span>${item.opt}</span>
+    </button>
+  `).join('');
+
+  // Power-ups: actualizar disponibilidad
+  document.getElementById('puSkip').disabled = STATE.puSkip <= 0;
+  document.getElementById('pu5050').disabled = STATE.pu5050 <= 0;
+  document.getElementById('puTime').disabled = STATE.puTime <= 0;
+  document.getElementById('puSkipCount').textContent = STATE.puSkip;
+  document.getElementById('pu5050Count').textContent = STATE.pu5050;
+  document.getElementById('puTimeCount').textContent = STATE.puTime;
+
+  // Timer
+  startTimer(q);
+}
+
+// ── TIMER ────────────────────────────────────────────────────
+function startTimer(q) {
+  clearInterval(STATE.timerInterval);
+  const showTimer = STATE.mode === 'contrarreloj' || STATE.diff === 'dificil';
+  if (!showTimer) return;
+
+  STATE.timeLeft = DIFF_TIME[STATE.diff] || 15;
+  updateTimerDisplay();
+
+  STATE.timerInterval = setInterval(() => {
+    STATE.timeLeft--;
+    updateTimerDisplay();
+    if (STATE.timeLeft <= 0) {
+      clearInterval(STATE.timerInterval);
+      handleTimeout(q);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const total = DIFF_TIME[STATE.diff] || 15;
+  const pct = (STATE.timeLeft / total) * 100;
+  const color = STATE.timeLeft <= 5 ? '#ef4444' : STATE.timeLeft <= 8 ? '#fbbf24' : '#22c55e';
+  document.getElementById('timerNum').textContent = STATE.timeLeft;
+  document.getElementById('timerNum').style.color = pct < 30 ? '#ef4444' : '#fef9f0';
+  document.getElementById('timerBg').style.background =
+    `conic-gradient(${color} ${pct}%, rgba(255,255,255,0.06) 0%)`;
+}
+
+function handleTimeout(q) {
+  STATE.answered = true;
+  STATE.streak = 0;
+  STATE.lives--;
+
+  // Revelar respuesta correcta
+  document.querySelectorAll('.answer-btn').forEach(btn => {
+    btn.classList.add('disabled');
+    if (parseInt(btn.dataset.orig) === q.correcta) btn.classList.add('reveal-correct');
+  });
+
+  showFeedback('timeout', '⏱ ¡Tiempo agotado!', `La respuesta era: <b>${q.opciones[q.correcta]}</b>. ${q.explicacion}`);
+  updateHUD();
+
+  if (STATE.lives <= 0) {
+    setTimeout(endGame, 2200);
+  } else {
+    document.getElementById('btnNext').classList.add('show');
+  }
+}
+
+// ── SELECCIÓN DE RESPUESTA ───────────────────────────────────
+function selectAnswer(btn, selectedOrig, correcta) {
+  if (STATE.answered) return;
+  STATE.answered = true;
+  clearInterval(STATE.timerInterval);
+
+  const q = STATE.questions[STATE.currentIndex];
+  const isCorrect = selectedOrig === correcta;
+
+  // Deshabilitar todos los botones
+  document.querySelectorAll('.answer-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (parseInt(b.dataset.orig) === correcta) b.classList.add('reveal-correct');
+  });
+
+  if (isCorrect) {
+    btn.classList.remove('reveal-correct');
+    btn.classList.add('correct');
+    STATE.streak++;
+    STATE.maxStreak = Math.max(STATE.maxStreak, STATE.streak);
+    STATE.correctCount++;
+
+    // Puntuación con bonus de racha y tiempo
+    let pts = SCORE_BASE[STATE.diff];
+    if (STATE.streak > 1) pts = Math.round(pts * (1 + (STATE.streak - 1) * 0.15));
+    const timeBonus = (STATE.mode === 'contrarreloj' || STATE.diff === 'dificil')
+      ? STATE.timeLeft * 5 : 0;
+    pts += timeBonus;
+
+    STATE.score += pts;
+
+    // Mostrar bonus popup
+    showBonusPopup(`+${pts}`);
+
+    const streakMsg = STATE.streak > 1 ? ` 🔥 Racha x${STATE.streak} (+bonus)!` : '';
+    showFeedback('correct', '✅ ¡Correcto!' + streakMsg, q.explicacion);
+
+  } else {
+    btn.classList.add('wrong');
+    STATE.streak = 0;
+    STATE.lives--;
+    showFeedback('wrong', '❌ Incorrecto', `La respuesta correcta era: <b>${q.opciones[correcta]}</b>. ${q.explicacion}`);
+  }
+
+  updateHUD();
+
+  // Game over si no hay vidas
+  if (STATE.lives <= 0) {
+    setTimeout(endGame, 2500);
+    return;
+  }
+
+  // Fin del juego si se acabaron las preguntas
+  if (STATE.currentIndex + 1 >= STATE.questions.length) {
+    setTimeout(endGame, 2500);
+    return;
+  }
+
+  document.getElementById('btnNext').classList.add('show');
+}
+
+// ── FEEDBACK ─────────────────────────────────────────────────
+function showFeedback(type, title, text) {
+  const banner = document.getElementById('feedbackBanner');
+  banner.className = `feedback-banner show ${type === 'correct' ? 'correct-fb' : type === 'wrong' ? 'wrong-fb' : 'timeout-fb'}`;
+  document.getElementById('feedbackTitle').innerHTML = title;
+  document.getElementById('feedbackText').innerHTML = text;
+}
+
+// ── BONUS POPUP ──────────────────────────────────────────────
+function showBonusPopup(text) {
+  const el = document.getElementById('bonusPop');
+  el.textContent = text;
+  el.className = 'bonus-pop show';
+  setTimeout(() => el.className = 'bonus-pop', 800);
+}
+
+// ── HUD ──────────────────────────────────────────────────────
+function updateHUD() {
+  document.getElementById('hudScore').textContent = STATE.score.toLocaleString();
+  document.getElementById('hudStreak').textContent = `x${STATE.streak}`;
+
+  // Vidas
+  const livesEl = document.getElementById('hudLives');
+  livesEl.innerHTML = '';
+  const maxLives = MODE_LIVES[STATE.mode];
+  for (let i = 0; i < maxLives; i++) {
+    const span = document.createElement('span');
+    span.textContent = i < STATE.lives ? '❤️' : '🖤';
+    livesEl.appendChild(span);
+  }
+}
+
+// ── SIGUIENTE PREGUNTA ───────────────────────────────────────
+document.getElementById('btnNext').addEventListener('click', () => {
+  STATE.currentIndex++;
+  loadQuestion();
+});
+
+// ── POWER-UPS ────────────────────────────────────────────────
+document.getElementById('puSkip').addEventListener('click', () => {
+  if (STATE.puSkip <= 0 || STATE.answered) return;
+  STATE.puSkip--;
+  clearInterval(STATE.timerInterval);
+  STATE.answered = true;
+  STATE.currentIndex++;
+  loadQuestion();
+});
+
+document.getElementById('pu5050').addEventListener('click', () => {
+  if (STATE.pu5050 <= 0 || STATE.answered) return;
+  STATE.pu5050--;
+  document.getElementById('pu5050Count').textContent = STATE.pu5050;
+  document.getElementById('pu5050').disabled = true;
+
+  const q = STATE.questions[STATE.currentIndex];
+  const btns = [...document.querySelectorAll('.answer-btn')];
+  const wrong = btns.filter(b => parseInt(b.dataset.orig) !== q.correcta);
+  // Eliminar 2 incorrectas al azar
+  const toElim = wrong.sort(() => Math.random() - 0.5).slice(0, 2);
+  toElim.forEach(b => { b.style.opacity = '0.2'; b.disabled = true; b.style.pointerEvents = 'none'; });
+});
+
+document.getElementById('puTime').addEventListener('click', () => {
+  if (STATE.puTime <= 0 || STATE.answered) return;
+  STATE.puTime--;
+  document.getElementById('puTimeCount').textContent = STATE.puTime;
+  STATE.timeLeft = Math.min(STATE.timeLeft + 10, DIFF_TIME[STATE.diff]);
+  updateTimerDisplay();
+});
+
+// ── FIN DEL JUEGO ────────────────────────────────────────────
+function endGame() {
+  clearInterval(STATE.timerInterval);
+
+  // Actualizar high score
+  if (STATE.score > STATE.highScore) {
+    STATE.highScore = STATE.score;
+    localStorage.setItem('avesHighScore', STATE.score);
+    document.getElementById('highScoreDisplay').textContent = STATE.highScore;
+  }
+
+  const total = Math.min(STATE.questions.length, STATE.currentIndex + 1);
+  const precision = total > 0 ? Math.round((STATE.correctCount / total) * 100) : 0;
+
+  // Calificación
+  let grade, msg, bird, gradeColor;
+  if (precision >= 90) {
+    grade = '¡MAESTRO!'; msg = 'Eres un experto en aves de la selva peruana 🌿'; bird = '🦅'; gradeColor = 'var(--gold)';
+  } else if (precision >= 70) {
+    grade = 'EXCELENTE'; msg = '¡Gran conocimiento de la Amazonía! 🌺'; bird = '🦜'; gradeColor = 'var(--green)';
+  } else if (precision >= 50) {
+    grade = 'BIEN'; msg = 'Vas por buen camino, ¡sigue aprendiendo! 🌿'; bird = '🐦'; gradeColor = 'var(--blue)';
+  } else {
+    grade = 'NOVATO'; msg = 'La selva tiene mucho que enseñarte... 🍃'; bird = '🥚'; gradeColor = 'rgba(254,249,240,0.5)';
+  }
+
+  document.getElementById('resultBird').textContent = bird;
+  document.getElementById('resultGrade').textContent = grade;
+  document.getElementById('resultGrade').style.color = gradeColor;
+  document.getElementById('resultMsg').textContent = msg;
+  document.getElementById('resPuntos').textContent = STATE.score.toLocaleString();
+  document.getElementById('resCorrectas').textContent = `${STATE.correctCount}/${total}`;
+  document.getElementById('resPrecision').textContent = precision + '%';
+
+  // Badges
+  const badges = [];
+  if (STATE.score > STATE.highScore - 1 && STATE.score > 0) badges.push({ cls: 'badge-gold', icon: '🏆', label: '¡Nuevo Récord!' });
+  if (STATE.maxStreak >= 5) badges.push({ cls: 'badge-gold', icon: '🔥', label: `Racha x${STATE.maxStreak}` });
+  if (precision === 100) badges.push({ cls: 'badge-purple', icon: '💎', label: 'Sin errores' });
+  if (STATE.mode === 'supervivencia') badges.push({ cls: 'badge-green', icon: '💀', label: `Supervivencia: ${STATE.currentIndex} pregs` });
+  if (STATE.diff === 'dificil') badges.push({ cls: 'badge-blue', icon: '⚡', label: 'Dificultad Máxima' });
+  if (STATE.puSkip === 2 && STATE.pu5050 === 1) badges.push({ cls: 'badge-green', icon: '🎯', label: 'Sin power-ups' });
+
+  document.getElementById('resultBadges').innerHTML = badges.map(b =>
+    `<span class="badge ${b.cls}">${b.icon} ${b.label}</span>`
+  ).join('');
+
+  showScreen('screenResult');
+}
+
+// ── BOTONES RESULTADO ────────────────────────────────────────
+document.getElementById('btnPlayAgain').addEventListener('click', startGame);
+document.getElementById('btnMenu').addEventListener('click', () => {
+  clearInterval(STATE.timerInterval);
+  showScreen('screenStart');
+});
+
+// ── INIT ─────────────────────────────────────────────────────
+buildBackground();
+</script>
+</body>
+</html>
