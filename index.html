@@ -748,7 +748,7 @@ body {
         ✂️ 50/50 <span class="pu-count" id="pu5050Count">1</span>
       </button>
       <button class="pu-btn" id="puTime" title="Más tiempo" style="display:none">
-        ⏱ +10s <span class="pu-count" id="puTimeCount">2</span>
+        ⏱ +5s <span class="pu-count" id="puTimeCount">2</span>
       </button>
     </div>
 
@@ -1213,10 +1213,9 @@ function startGame() {
   STATE.pu5050 = 1;
   STATE.puTime = 2;
 
-  // Timer solo en modo contrarreloj y difícil
-  const showTimer = STATE.mode === 'contrarreloj' || STATE.diff === 'dificil';
-  document.getElementById('timerWrap').style.display = showTimer ? 'flex' : 'none';
-  document.getElementById('puTime').style.display = showTimer ? 'flex' : 'none';
+  // Timer siempre visible (10s por pregunta)
+  document.getElementById('timerWrap').style.display = 'flex';
+  document.getElementById('puTime').style.display = 'flex';
 
   showScreen('screenGame');
   loadQuestion();
@@ -1287,10 +1286,8 @@ function loadQuestion() {
 // ── TIMER ────────────────────────────────────────────────────
 function startTimer(q) {
   clearInterval(STATE.timerInterval);
-  const showTimer = STATE.mode === 'contrarreloj' || STATE.diff === 'dificil';
-  if (!showTimer) return;
 
-  STATE.timeLeft = DIFF_TIME[STATE.diff] || 15;
+  STATE.timeLeft = 10;
   updateTimerDisplay();
 
   STATE.timerInterval = setInterval(() => {
@@ -1304,7 +1301,7 @@ function startTimer(q) {
 }
 
 function updateTimerDisplay() {
-  const total = DIFF_TIME[STATE.diff] || 15;
+  const total = 10;
   const pct = (STATE.timeLeft / total) * 100;
   const color = STATE.timeLeft <= 5 ? '#ef4444' : STATE.timeLeft <= 8 ? '#fbbf24' : '#22c55e';
   document.getElementById('timerNum').textContent = STATE.timeLeft;
@@ -1359,8 +1356,7 @@ function selectAnswer(btn, selectedOrig, correcta) {
     // Puntuación con bonus de racha y tiempo
     let pts = SCORE_BASE[STATE.diff];
     if (STATE.streak > 1) pts = Math.round(pts * (1 + (STATE.streak - 1) * 0.15));
-    const timeBonus = (STATE.mode === 'contrarreloj' || STATE.diff === 'dificil')
-      ? STATE.timeLeft * 5 : 0;
+    const timeBonus = STATE.timeLeft * 5;
     pts += timeBonus;
 
     STATE.score += pts;
@@ -1461,7 +1457,7 @@ document.getElementById('puTime').addEventListener('click', () => {
   if (STATE.puTime <= 0 || STATE.answered) return;
   STATE.puTime--;
   document.getElementById('puTimeCount').textContent = STATE.puTime;
-  STATE.timeLeft = Math.min(STATE.timeLeft + 10, DIFF_TIME[STATE.diff]);
+  STATE.timeLeft = Math.min(STATE.timeLeft + 5, 10);
   updateTimerDisplay();
 });
 
