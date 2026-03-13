@@ -182,6 +182,17 @@ body {
   transition: all 0.2s;
 }
 .diff-btn.active, .diff-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(251,191,36,0.08); }
+.diff-pts {
+  display: inline-block;
+  background: rgba(255,255,255,0.12);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  margin-left: 6px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.diff-btn.active .diff-pts { background: rgba(251,191,36,0.2); }
 
 .start-btn {
   display: inline-block;
@@ -339,6 +350,15 @@ body {
   gap: 6px;
 }
 
+.question-diff-pts {
+  font-size: 0.6rem;
+  color: var(--gold);
+  background: rgba(251,191,36,0.12);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
 .question-num {
   font-size: 0.65rem;
   color: rgba(254,249,240,0.3);
@@ -678,9 +698,9 @@ body {
       </div>
 
       <div class="difficulty-row">
-        <button class="diff-btn active" data-diff="facil">🌿 Fácil</button>
-        <button class="diff-btn" data-diff="medio">🔥 Medio</button>
-        <button class="diff-btn" data-diff="dificil">💀 Difícil</button>
+        <button class="diff-btn active" data-diff="facil">🌿 Fácil <span class="diff-pts">100 pts</span></button>
+        <button class="diff-btn" data-diff="medio">🔥 Medio <span class="diff-pts">150 pts</span></button>
+        <button class="diff-btn" data-diff="dificil">💀 Difícil <span class="diff-pts">250 pts</span></button>
       </div>
 
       <button class="start-btn" id="btnStart">¡EMPEZAR!</button>
@@ -742,6 +762,7 @@ body {
       <div class="question-body">
         <div class="question-category">
           <span id="questionCategory">🦅 Rapaces</span>
+          <span class="question-diff-pts" id="questionDiffPts">+100 pts</span>
           <span class="question-num" id="questionNum">1 / 10</span>
         </div>
         <div class="question-text" id="questionText"></div>
@@ -781,6 +802,10 @@ body {
           <div class="res-stat-num" id="resPrecision" style="color:var(--blue)">0%</div>
           <div class="res-stat-label">Precisión</div>
         </div>
+        <div>
+          <div class="res-stat-num" id="resNivel" style="color:var(--gold2)">—</div>
+          <div class="res-stat-label">Nivel</div>
+        </div>
       </div>
 
       <div class="result-badges" id="resultBadges"></div>
@@ -813,159 +838,159 @@ const ALL_QUESTIONS = [
     texto: "¿Cuál es el Ave Nacional del Perú?",
     opciones: ["Cóndor Andino", "Gallito de las Rocas", "Guacamayo Escarlata", "Águila Arpía"],
     correcta: 1,
-    explicacion: "El Gallito de las Rocas (Rupicola peruvianus) es el Ave Nacional del Perú desde 1941. El macho luce un plumaje naranja-rojo neón inconfundible."
+    explicacion: "El Gallito de las Rocas es el Ave Nacional del Perú desde 1941. El macho tiene un plumaje naranja-rojo muy llamativo."
   },
   {
     dificultad: "facil",
     categoria: "🦅 Rapaces",
     ave: "Águila Arpía",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Harpia_harpyja_001.jpg/640px-Harpia_harpyja_001.jpg",
-    texto: "¿Cuál es la rapaz más grande del mundo, presente en la Amazonía peruana?",
+    texto: "¿Cuál es el águila más grande de la selva peruana?",
     opciones: ["Cóndor Andino", "Halcón Peregrino", "Águila Arpía", "Cóndor de la Selva"],
     correcta: 2,
-    explicacion: "El Águila Arpía (Harpia harpyja) es la rapaz más grande y poderosa del mundo. Sus garras pueden medir hasta 13 cm, comparables a las de un oso grizzly."
+    explicacion: "El Águila Arpía es el águila más grande y poderosa del mundo. Vive en la Amazonía y sus garras son tan grandes como las de un oso."
   },
   {
     dificultad: "facil",
     categoria: "🦜 Psitácidos",
     ave: "Guacamayo Escarlata",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ara_macao_-_Chojna.jpg/640px-Ara_macao_-_Chojna.jpg",
-    texto: "¿De qué color predominante es el Guacamayo Escarlata (Ara macao)?",
-    opciones: ["Azul y amarillo", "Verde y rojo", "Rojo con franjas amarillas y azules", "Completamente rojo"],
+    texto: "¿De qué color es principalmente el Guacamayo Escarlata?",
+    opciones: ["Azul y amarillo", "Verde y rojo", "Rojo con franjas amarillas y azules", "Completamente verde"],
     correcta: 2,
-    explicacion: "El Guacamayo Escarlata tiene rojo intenso predominante en el cuerpo, con franjas amarillas brillantes en las alas que gradúan a azul eléctrico en las puntas."
+    explicacion: "El Guacamayo Escarlata es principalmente rojo, con franjas amarillas en las alas que terminan en azul."
   },
   {
     dificultad: "facil",
     categoria: "🌿 Hábitat",
-    texto: "¿Dónde habita principalmente el Hoatzín (Opisthocomus hoazin)?",
-    opciones: ["Desiertos costeros", "Cumbres andinas", "Pantanos y cochas de la selva baja", "Bosques secos"],
+    texto: "¿Dónde vive el Hoatzín?",
+    opciones: ["En el desierto", "En las montañas altas", "En pantanos de la selva", "En bosques secos"],
     correcta: 2,
-    explicacion: "El Hoatzín vive en pantanos, orillas de ríos y cochas (lagos oxbow) de la selva amazónica baja, donde abundan las plantas con hojas que forman su dieta."
+    explicacion: "El Hoatzín vive en pantanos y orillas de ríos de la selva amazónica, donde come hojas de las plantas."
   },
   {
     dificultad: "facil",
     categoria: "🛡️ Conservación",
-    texto: "¿Qué significan las siglas IUCN?",
+    texto: "¿Qué organización internacional protege a los animales en peligro usando la 'Lista Roja'?",
     opciones: [
-      "Instituto Único de Conservación Nacional",
-      "Unión Internacional para la Conservación de la Naturaleza",
-      "Inventario Universal de Criaturas Naturales",
-      "Iniciativa para la Unión de Ciencias Naturales"
+      "La FIFA",
+      "La IUCN (Unión para la Conservación de la Naturaleza)",
+      "La NASA",
+      "La OMS"
     ],
     correcta: 1,
-    explicacion: "La IUCN (International Union for Conservation of Nature) es la autoridad global que determina el estado de conservación de las especies mediante la Lista Roja."
+    explicacion: "La IUCN es la organización mundial que decide qué animales están en peligro de extinción usando su famosa Lista Roja."
   },
   {
     dificultad: "facil",
     categoria: "🌿 Hábitat",
     ave: "Gallito de las Rocas",
-    texto: "¿En qué tipo de ecosistema habita principalmente el Gallito de las Rocas?",
-    opciones: ["Selva baja amazónica", "Selva alta (Yungas)", "Costa desértica", "Puna altoandina"],
+    texto: "¿En qué zona del Perú vive el Gallito de las Rocas?",
+    opciones: ["Selva baja", "Selva alta (montañas con bosque)", "Playa", "Desierto"],
     correcta: 1,
-    explicacion: "El Gallito de las Rocas habita las Yungas (selva alta andina) entre los 500 y 2,400 msnm en departamentos como San Martín, Pasco y Cusco."
+    explicacion: "El Gallito de las Rocas vive en la selva alta andina (Yungas), en zonas montañosas con mucha vegetación."
   },
   {
     dificultad: "facil",
     categoria: "🦜 Psitácidos",
-    texto: "¿Cuál es el estado de conservación del Guacamayo Escarlata a nivel global según la IUCN?",
-    opciones: ["En Peligro Crítico (CR)", "En Peligro (EN)", "Vulnerable (VU)", "Preocupación Menor (LC)"],
+    texto: "¿El Guacamayo Escarlata está en peligro de extinción a nivel mundial?",
+    opciones: ["Sí, en peligro crítico", "Sí, en peligro", "Sí, es vulnerable", "No, está fuera de peligro"],
     correcta: 3,
-    explicacion: "Aunque es LC a nivel global, el Guacamayo Escarlata sufre presión por el tráfico ilegal de mascotas y está en el Apéndice I de CITES, que prohíbe su comercio internacional."
+    explicacion: "A nivel mundial no está en peligro, pero sí sufre por el tráfico ilegal de mascotas y está prohibido comercializarlo."
   },
   {
     dificultad: "facil",
     categoria: "🍃 Curiosidades",
     ave: "Hoatzín",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Hoatzin_2.jpg/640px-Hoatzin_2.jpg",
-    texto: "El Hoatzín es el único ave del mundo que digiere alimento igual que…",
-    opciones: ["Los reptiles", "Las vacas (rumiantes)", "Los peces", "Los murciélagos"],
+    texto: "¿A qué animal se parece el Hoatzín en su forma de digerir la comida?",
+    opciones: ["A los reptiles", "A las vacas", "A los peces", "A los murciélagos"],
     correcta: 1,
-    explicacion: "El Hoatzín tiene un buche especializado donde bacterias fermentan las hojas que come, igual que el rumen de las vacas. Por eso tiene un olor peculiar a estiércol."
+    explicacion: "El Hoatzín digiere las hojas como una vaca: usa bacterias en su estómago para fermentar la comida. Por eso huele un poco mal."
   },
 
   /* ── MEDIO ──────────────────────────────────────────────── */
   {
     dificultad: "medio",
     categoria: "🔬 Taxonomía",
-    texto: "¿A qué familia pertenece el Gallito de las Rocas (Rupicola peruvianus)?",
-    opciones: ["Psittacidae", "Cotingidae", "Trochilidae", "Accipitridae"],
+    texto: "¿A qué familia de aves pertenece el Gallito de las Rocas?",
+    opciones: ["Loros (Psittacidae)", "Cotingas (Cotingidae)", "Colibríes (Trochilidae)", "Águilas (Accipitridae)"],
     correcta: 1,
-    explicacion: "El Gallito de las Rocas pertenece a la familia Cotingidae (cotingas), un grupo de aves mayormente neotropicales conocidas por sus brillantes colores."
+    explicacion: "El Gallito de las Rocas pertenece a la familia de las cotingas, un grupo de aves tropicales conocidas por sus colores brillantes."
   },
   {
     dificultad: "medio",
     categoria: "🌟 Endemismo",
     ave: "Colibrí Maravilloso",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Marvelous_Spatuletail_%28Loddigesia_mirabilis%29_male_-_8.jpg/640px-Marvelous_Spatuletail_%28Loddigesia_mirabilis%29_male_-_8.jpg",
-    texto: "¿En qué valle específico se restringe la distribución del Colibrí Maravilloso (Loddigesia mirabilis)?",
+    texto: "¿En qué valle del Perú vive el Colibrí Maravilloso?",
     opciones: ["Valle del Colca", "Valle del Mantaro", "Valle del río Utcubamba", "Valle del Urubamba"],
     correcta: 2,
-    explicacion: "El Colibrí Maravilloso solo existe en el valle del río Utcubamba (Amazonas), un rango de menos de 100 km². La Reserva de Huembo es clave para su protección."
+    explicacion: "El Colibrí Maravilloso solo existe en el valle del río Utcubamba, en Amazonas. Es un área muy pequeña, menor a 100 km²."
   },
   {
     dificultad: "medio",
     categoria: "🦅 Comportamiento",
     ave: "Águila Arpía",
-    texto: "¿Cuál es la presa favorita del Águila Arpía en la Amazonía?",
-    opciones: ["Peces grandes", "Monos y perezosos", "Serpientes boa", "Tortugas"],
+    texto: "¿Qué animales caza principalmente el Águila Arpía?",
+    opciones: ["Peces grandes", "Monos y perezosos", "Serpientes", "Tortugas"],
     correcta: 1,
-    explicacion: "El Águila Arpía es especialista en cazar monos (Ateles, Alouatta) y perezosos en el dosel forestal. Sus potentes garras pueden sujetar presas del tamaño de un mono adulto."
+    explicacion: "El Águila Arpía caza monos y perezosos en las copas de los árboles. Sus poderosas garras pueden atrapar presas del tamaño de un mono adulto."
   },
   {
     dificultad: "medio",
     categoria: "🛡️ Conservación",
     ave: "Paraba de Frente Roja",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Ara_rubrogenys_-Bolivia-8.jpg/640px-Ara_rubrogenys_-Bolivia-8.jpg",
-    texto: "¿Cuál es el estado de conservación de la Paraba de Frente Roja (Ara rubrogenys)?",
-    opciones: ["LC – Preocupación Menor", "NT – Casi Amenazada", "EN – En Peligro", "CR – Peligro Crítico"],
+    texto: "¿Qué tan amenazada está la Paraba de Frente Roja?",
+    opciones: ["No está amenazada", "Casi amenazada", "En peligro", "En peligro crítico"],
     correcta: 3,
-    explicacion: "La Paraba de Frente Roja está en Peligro Crítico (CR) principalmente por el tráfico ilegal de mascotas y la pérdida de sitios de anidación en acantilados rocosos."
+    explicacion: "La Paraba de Frente Roja está en Peligro Crítico por el tráfico ilegal y la destrucción de sus lugares para anidar."
   },
   {
     dificultad: "medio",
     categoria: "🌿 Ecología",
-    texto: "¿Por qué visitan los Guacamayos las 'colpas de arcilla' en el PN Bahuaja Sonene?",
+    texto: "¿Para qué comen arcilla los Guacamayos en las 'colpas'?",
     opciones: [
       "Para hacer sus nidos",
-      "Para beber agua mineral",
-      "Para consumir minerales que neutralizan toxinas de su dieta",
-      "Para escapar de depredadores"
+      "Para beber agua",
+      "Para limpiar las toxinas de las frutas que comen",
+      "Para esconderse de otros animales"
     ],
     correcta: 2,
-    explicacion: "Los guacamayos ingieren arcilla de las colpas para neutralizar las toxinas presentes en las semillas verdes y frutas que consumen. Es una adaptación conductual fascinante."
+    explicacion: "Los guacamayos comen arcilla para neutralizar las toxinas de las semillas y frutas de su dieta. Es un comportamiento muy interesante."
   },
   {
     dificultad: "medio",
     categoria: "🔬 Morfología",
     ave: "Hoatzín",
-    texto: "¿Qué característica única tienen los polluelos del Hoatzín que los diferencia de casi todas las aves?",
+    texto: "¿Qué tienen de especial las crías del Hoatzín?",
     opciones: [
       "Nacen sin plumas",
-      "Tienen dientes",
-      "Poseen garras funcionales en las alas para trepar",
+      "Tienen dientes al nacer",
+      "Tienen garras en las alas para trepar",
       "No pueden volar nunca"
     ],
     correcta: 2,
-    explicacion: "Los polluelos del Hoatzín tienen garras funcionales en las alas (reminiscencia de sus ancestros reptilianos). Las usan para trepar y escapar del nido si son amenazados."
+    explicacion: "Las crías del Hoatzín tienen garras en las alas, como los dinosaurios. Las usan para trepar por los árboles y escapar del peligro."
   },
   {
     dificultad: "medio",
     categoria: "🏛️ Legislación",
-    texto: "¿Qué es el CITES Apéndice I?",
+    texto: "¿Qué significa que un ave esté en 'CITES Apéndice I'?",
     opciones: [
-      "Lista de aves más abundantes del mundo",
-      "Prohibición total de comercio internacional de la especie",
-      "Permiso especial de cría en cautiverio",
-      "Categoría de aves no amenazadas"
+      "Que es muy abundante",
+      "Que está prohibido venderla internacionalmente",
+      "Que se puede criar en cautiverio",
+      "Que no está en peligro"
     ],
     correcta: 1,
-    explicacion: "El CITES Apéndice I incluye especies amenazadas de extinción. El comercio internacional de estas especies solo se permite en circunstancias excepcionales. El Guacamayo Escarlata está en Apéndice I."
+    explicacion: "CITES Apéndice I protege a las especies más amenazadas prohibiendo su comercio internacional, salvo casos muy especiales."
   },
   {
     dificultad: "medio",
     categoria: "🌟 Endemismo",
-    texto: "¿Cuáles de estas aves son endémicas del Perú?",
+    texto: "¿Cuáles de estas aves solo existen en el Perú?",
     opciones: [
       "Águila Arpía y Hoatzín",
       "Colibrí Maravilloso, Lechucita Bigotona y Tucancillo de Ceja Amarilla",
@@ -973,16 +998,16 @@ const ALL_QUESTIONS = [
       "Gallito de las Rocas y Paraba de Frente Roja"
     ],
     correcta: 1,
-    explicacion: "El Colibrí Maravilloso, la Lechucita Bigotona y el Tucancillo de Ceja Amarilla son endémicos del Perú: no existen en ningún otro país del mundo."
+    explicacion: "El Colibrí Maravilloso, la Lechucita Bigotona y el Tucancillo de Ceja Amarilla son endémicos: solo viven en el Perú."
   },
   {
     dificultad: "medio",
     categoria: "🎭 Comportamiento",
     ave: "Gallito de las Rocas",
-    texto: "¿Cómo se llama el comportamiento de cortejo grupal del Gallito de las Rocas?",
-    opciones: ["Parada nupcial", "Lek", "Danza del cortejo", "Exhibición territorial"],
+    texto: "¿Cómo conquista el Gallito de las Rocas a la hembra?",
+    opciones: ["Construye un nido grande", "Baila en grupo con otros machos (lek)", "Canta toda la noche", "Le trae comida"],
     correcta: 1,
-    explicacion: "Los 'leks' son arenas colectivas donde los machos del Gallito de las Rocas se reúnen al amanecer para exhibir su plumaje naranja-rojo y competir por la atención de las hembras."
+    explicacion: "Los machos se reúnen en grupos llamados 'leks' para bailar y mostrar su plumaje naranja brillante. La hembra elige al que más le gusta."
   },
 
   /* ── DIFÍCIL ────────────────────────────────────────────── */
@@ -990,97 +1015,97 @@ const ALL_QUESTIONS = [
     dificultad: "dificil",
     categoria: "🔬 Taxonomía",
     ave: "Hoatzín",
-    texto: "¿A qué orden taxonómico pertenece el Hoatzín (Opisthocomus hoazin)?",
+    texto: "¿A qué orden pertenece el Hoatzín, siendo el único miembro de su grupo?",
     opciones: ["Galliformes", "Opisthocomiformes", "Cuculiformes", "Columbiformes"],
     correcta: 1,
-    explicacion: "El Hoatzín es el único representante del orden Opisthocomiformes. Su posición filogenética fue debatida por décadas; estudios genómicos modernos lo ubican como un linaje único sin parientes cercanos vivos."
+    explicacion: "El Hoatzín es tan especial que tiene su propio orden: Opisthocomiformes. No tiene parientes cercanos vivos, es único en el mundo."
   },
   {
     dificultad: "dificil",
     categoria: "📐 Morfología",
     ave: "Águila Arpía",
-    texto: "¿Cuánto pueden medir las garras del Águila Arpía (Harpia harpyja)?",
+    texto: "¿Cuánto miden las garras del Águila Arpía?",
     opciones: ["Hasta 5 cm", "Hasta 8 cm", "Hasta 13 cm", "Hasta 20 cm"],
     correcta: 2,
-    explicacion: "Las garras traseras del Águila Arpía pueden medir hasta 13 cm, similar a las garras de un oso grizzly. Esta adaptación le permite capturar monos y perezosos con precisión letal."
+    explicacion: "Las garras del Águila Arpía miden hasta 13 cm, tan grandes como las de un oso. Con ellas atrapa monos y perezosos."
   },
   {
     dificultad: "dificil",
     categoria: "🌍 Distribución",
     ave: "Lechucita Bigotona",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Long-whiskered_owlet_-_Xenoglaux_loweryi.jpg/640px-Long-whiskered_owlet_-_Xenoglaux_loweryi.jpg",
-    texto: "¿En qué año fue descrita científicamente la Lechucita Bigotona (Xenoglaux loweryi)?",
-    opciones: ["1945", "1960", "1976", "1990"],
+    texto: "¿En qué década se descubrió la Lechucita Bigotona?",
+    opciones: ["En los años 40", "En los años 60", "En los años 70", "En los años 90"],
     correcta: 2,
-    explicacion: "La Lechucita Bigotona fue descrita por la ciencia en 1976 a partir de especímenes capturados accidentalmente en redes de niebla. Sigue siendo una de las aves menos conocidas del planeta."
+    explicacion: "La Lechucita Bigotona fue descubierta en 1976. Fue atrapada por accidente en una red. Sigue siendo una de las aves menos conocidas del mundo."
   },
   {
     dificultad: "dificil",
     categoria: "🛡️ Conservación",
     ave: "Paujil Carunculado",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Crax_globulosa_male.jpg/640px-Crax_globulosa_male.jpg",
-    texto: "¿Por qué el Paujil Carunculado (Crax globulosa) es especialmente vulnerable a la caza?",
+    texto: "¿Por qué es tan fácil cazar al Paujil Carunculado?",
     opciones: [
-      "Es muy lento para volar",
-      "Tiene un plumaje llamativo que lo delata",
-      "Es muy grande, sabroso y habita en zonas accesibles por ríos",
-      "Anida en el suelo, fácil de encontrar"
+      "Porque vuela muy lento",
+      "Porque su plumaje lo delata",
+      "Porque es grande, sabroso y vive cerca de los ríos",
+      "Porque hace sus nidos en el suelo"
     ],
     correcta: 2,
-    explicacion: "El Paujil Carunculado es una de las aves más grandes de la Amazonía, con carne muy apreciada, y habita en riberas y várzeas accesibles por los grandes ríos amazónicos, lo que facilita su caza."
+    explicacion: "El Paujil Carunculado es grande, su carne es apreciada y vive en riberas de ríos donde los cazadores llegan fácilmente en bote."
   },
   {
     dificultad: "dificil",
     categoria: "🌟 Endemismo",
-    texto: "¿Cuál es el nombre de la institución peruana especializada en ornitología que monitorea especies endémicas?",
+    texto: "¿Qué institución peruana se dedica a estudiar y proteger las aves del Perú?",
     opciones: ["SERNANP", "SERFOR", "CORBIDI", "MINAM"],
     correcta: 2,
-    explicacion: "CORBIDI (Centro de Ornitología y Biodiversidad) es la principal institución peruana dedicada al estudio y conservación de aves. Publica registros y realiza encuestas de campo de especies poco conocidas."
+    explicacion: "CORBIDI (Centro de Ornitología y Biodiversidad) es la principal institución peruana dedicada al estudio de las aves."
   },
   {
     dificultad: "dificil",
     categoria: "🔬 Morfología",
     ave: "Colibrí Maravilloso",
-    texto: "¿Qué rasgo morfológico hace único al macho del Colibrí Maravilloso (Loddigesia mirabilis)?",
+    texto: "¿Qué hace tan especial la cola del Colibrí Maravilloso macho?",
     opciones: [
-      "Pico curvado de 15 cm",
-      "Plumaje completamente iridiscente en 7 colores",
-      "Solo 4 plumas en la cola: las 2 exteriores terminan en 'raquetas' violáceas",
-      "Alas transparentes como el cristal"
+      "Tiene un pico curvo de 15 cm",
+      "Brilla en 7 colores diferentes",
+      "Solo tiene 4 plumas, 2 terminan en forma de raqueta violeta",
+      "Sus alas son transparentes"
     ],
     correcta: 2,
-    explicacion: "El macho del Colibrí Maravilloso tiene solo 4 plumas en la cola; las dos exteriores son extremadamente largas y terminan en discos o 'raquetas' de color azul violáceo iridiscente que se mueven independientemente."
+    explicacion: "El macho tiene solo 4 plumas en la cola. Las 2 más largas terminan en discos violetas que se mueven de forma independiente. Es único en el mundo."
   },
   {
     dificultad: "dificil",
     categoria: "🌍 Ecología",
-    texto: "¿Cuál de estas aves cumple un rol de 'limpieza biológica' en el ecosistema, evitando la propagación de enfermedades?",
+    texto: "¿Qué ave de la selva peruana come animales muertos y así evita que se propaguen enfermedades?",
     opciones: ["Águila Arpía", "Gallito de las Rocas", "Cóndor de la Selva", "Colibrí Maravilloso"],
     correcta: 2,
-    explicacion: "El Cóndor de la Selva (Sarcoramphus papa) es carroñero especializado. Al consumir cadáveres rápidamente, evita la descomposición prolongada que propagaría bacterias y enfermedades al ecosistema."
+    explicacion: "El Cóndor de la Selva come animales muertos (es carroñero). Al hacerlo, limpia el ecosistema y evita que se propaguen enfermedades."
   },
   {
     dificultad: "dificil",
     categoria: "📋 Conservación",
-    texto: "¿En cuál de estas áreas protegidas del Perú se protege específicamente al Colibrí Maravilloso?",
+    texto: "¿Dónde se protege al Colibrí Maravilloso en el Perú?",
     opciones: [
       "Reserva Nacional Pacaya Samiria",
       "Parque Nacional Manu",
-      "Reserva privada Huembo (Amazonas)",
+      "Reserva Huembo en Amazonas",
       "Parque Nacional Yanachaga-Chemillén"
     ],
     correcta: 2,
-    explicacion: "La Reserva privada Huembo, gestionada por la Asociación Ecosistemas Andinos (ECOAN) en Amazonas, es el principal refugio del Colibrí Maravilloso y un destino de ecoturismo ornitológico de fama mundial."
+    explicacion: "La Reserva Huembo en Amazonas es el principal refugio del Colibrí Maravilloso. Es famosa entre los observadores de aves de todo el mundo."
   },
   {
     dificultad: "dificil",
     categoria: "🔬 Taxonomía",
     ave: "Tucancillo de Ceja Amarilla",
     imagen: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Yellow-browed_toucanet_%28Aulacorhynchus_huallagae%29.jpg/640px-Yellow-browed_toucanet_%28Aulacorhynchus_huallagae%29.jpg",
-    texto: "¿A qué familia pertenece el Tucancillo de Ceja Amarilla (Aulacorhynchus huallagae)?",
-    opciones: ["Trochilidae", "Cotingidae", "Ramphastidae", "Psittacidae"],
+    texto: "¿A qué familia pertenece el Tucancillo de Ceja Amarilla?",
+    opciones: ["Colibríes (Trochilidae)", "Cotingas (Cotingidae)", "Tucanes (Ramphastidae)", "Loros (Psittacidae)"],
     correcta: 2,
-    explicacion: "El Tucancillo de Ceja Amarilla pertenece a la familia Ramphastidae (tucanes), caracterizada por sus picos grandes y coloridos. Es una de las aves más raras y menos conocidas del Perú."
+    explicacion: "El Tucancillo de Ceja Amarilla pertenece a la familia de los tucanes. Es una de las aves más raras y menos conocidas del Perú."
   }
 ];
 
@@ -1218,6 +1243,7 @@ function loadQuestion() {
   const total = STATE.mode === 'supervivencia' ? '∞' : STATE.questions.length;
   document.getElementById('questionNum').textContent = `${STATE.currentIndex + 1} / ${total}`;
   document.getElementById('questionCategory').textContent = q.categoria;
+  document.getElementById('questionDiffPts').textContent = `+${SCORE_BASE[q.dificultad]} pts`;
 
   // Imagen
   const imgWrap = document.getElementById('questionImgWrap');
@@ -1472,6 +1498,8 @@ function endGame() {
   document.getElementById('resPuntos').textContent = STATE.score.toLocaleString();
   document.getElementById('resCorrectas').textContent = `${STATE.correctCount}/${total}`;
   document.getElementById('resPrecision').textContent = precision + '%';
+  const DIFF_LABELS = { facil: 'Fácil', medio: 'Medio', dificil: 'Difícil' };
+  document.getElementById('resNivel').textContent = DIFF_LABELS[STATE.diff] || STATE.diff;
 
   // Badges
   const badges = [];
